@@ -83,7 +83,12 @@ function getTweets() {
 			 var finalHtml;
 			 //console.log(Tweets);
 			 for(let i = 0; i<tweets.length;++i){
-				finalHtml += getTweetHTML(tweets[i],"delete");
+				if(localStorage.getItem("id"+tweets[i]) == tweets[i].id ){
+					finalHtml += getTweetHTML(tweets[i],"delete");
+				}
+				else{
+					finalHtml += getTweetHTML(tweets[i],"like");
+				}
 				
 				
 			}
@@ -107,6 +112,8 @@ function tweetHandler() {
 			//document.getElementById(target).getElementsByClassName("numlikes")[0].innerHTML = req.responseText;
 			var aux = JSON.parse(req.responseText);
 			var finalHtml = getTweetHTML(aux[0],"delete")+document.getElementById("tweet_list");
+			localStorage.setItem("token" + aux['id'], aux['token']);
+			localStorage.setItem("id" + aux['id'], aux['id']);
 			document.getElementById("tweet_list").innerHTML = finalHtml;
 		}
 	};

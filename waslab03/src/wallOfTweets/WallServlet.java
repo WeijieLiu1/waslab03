@@ -1,6 +1,8 @@
 package wallOfTweets;
 
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -69,9 +71,10 @@ public class WallServlet extends HttpServlet {
 				String Text = newObj.getString("text");
 				Tweet t= Database.insertTweet(Author, Text);
 				JSONObject newObj2 = new JSONObject(t);
-				String respo = newObj2.toString();
+				//String respo = newObj2.toString();
+				String token = StringtoHashMD5(Long.toString(t.getId()));
 				
-				resp.getWriter().println(respo);
+				resp.getWriter().println(token);
 				
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
@@ -89,7 +92,8 @@ public class WallServlet extends HttpServlet {
 		int lastIndex = uri.lastIndexOf("/delete");
 		if (lastIndex > -1) {  // uri ends with "/likes"
 			// Implements POST http://localhost:8080/waslab03/tweets/:id/likes
-			long id = Long.valueOf(uri.substring(TWEETS_URI.length(),lastIndex));		
+			long id = Long.valueOf(uri.substring(TWEETS_URI.length(),lastIndex));
+			
 			if(!Database.deleteTweet(id)) {
 				
 			}
@@ -99,4 +103,20 @@ public class WallServlet extends HttpServlet {
 		throw new ServletException("DELETE not yet implemented");
 	}
 
+	
+	String StringtoHashMD5(String s) {
+        StringBuffer sb = new StringBuffer();
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] digest = md.digest(s.getBytes());
+            for (int i = 0; i < digest.length; ++i) {
+                sb.append(Integer.toHexString((digest[i] & 0xFF) | 0x100).substring(1, 3));
+            }
+
+        }
+        catch(NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return sb.toString();
+    }
 }
