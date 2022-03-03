@@ -17,6 +17,9 @@ var tweetBlock = "	<div id='tweet_{0}' class='wallitem'>\n\
 	</div>\n\
 	</div>\n";
 
+
+
+
 String.prototype.format = function() {
 	var args = arguments;
 	return this.replace(/{(\d+)}/g, function(match, number) { 
@@ -34,7 +37,7 @@ function likeHandler(tweetID) {
 
 	req = new XMLHttpRequest();
 	req.open('POST', uri, /*async*/true);
-	req.onload = function() { 
+	req.onreadystatechange = function() { 
 		if (req.status == 200) { // 200 OK
 			document.getElementById(target).getElementsByClassName("numlikes")[0].innerHTML = req.responseText;
 		}
@@ -50,13 +53,20 @@ function deleteHandler(tweetID) {
 	 */	
 	 
 	req = new XMLHttpRequest();
+	
+	var token = localStorage.getItem("token"+tweetID);
+	
 	var newUri = tweetsURI+ "/" + tweetID+"/delete";
+	console.log("newUri:"+newUri);
 	req.open('DELETE', newUri, /*async*/true);
-	req.onload = function() { 
-		if (req.status == 200) { // 200 OK
+	req.onreadystatechange = function() { 
 			
-			document.getElementById("tweet_"+tweetID).remove();
-		}
+			var d = document.getElementById("tweet_"+tweetID);
+			d.parentNode.removeChild(d);
+			localStorage.removeItem("token"+tweetID);
+			
+			//document.getElementById("tweet_"+tweetID).remove();
+		
 	};
 	req.send(/*no params*/null);
 	
@@ -81,9 +91,9 @@ function getTweets() {
 			 */
 			 var tweets = JSON.parse(tweet_list);
 			 var finalHtml;
-			 //console.log(Tweets);
 			 for(let i = 0; i<tweets.length;++i){
-				if(localStorage.getItem("id"+tweets[i]) == tweets[i].id ){
+				if(localStorage.getItem("id"+tweets[i].id) == tweets[i].id ){
+					
 					finalHtml += getTweetHTML(tweets[i],"delete");
 				}
 				else{
@@ -111,9 +121,13 @@ function tweetHandler() {
 		if (req.status == 200) { // 200 OK
 			//document.getElementById(target).getElementsByClassName("numlikes")[0].innerHTML = req.responseText;
 			var aux = JSON.parse(req.responseText);
-			var finalHtml = getTweetHTML(aux[0],"delete")+document.getElementById("tweet_list");
+			
+			var finalHtml = getTweetHTML(aux,"delete")+document.getElementById("tweet_list").innerHTML;
+			
 			localStorage.setItem("token" + aux['id'], aux['token']);
 			localStorage.setItem("id" + aux['id'], aux['id']);
+			
+			
 			document.getElementById("tweet_list").innerHTML = finalHtml;
 		}
 	};
@@ -141,6 +155,8 @@ function tweetHandler() {
 
 //main
 function main() {
+	
 	document.getElementById("tweet_submit").onclick = tweetHandler;
 	getTweets();
+	
 };
