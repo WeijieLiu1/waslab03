@@ -70,11 +70,12 @@ public class WallServlet extends HttpServlet {
 				String Author = newObj.getString("author");
 				String Text = newObj.getString("text");
 				Tweet t= Database.insertTweet(Author, Text);
+				
 				JSONObject newObj2 = new JSONObject(t);
 				//String respo = newObj2.toString();
 				String token = StringtoHashMD5(Long.toString(t.getId()));
-				
-				resp.getWriter().println(token);
+				newObj2.put("token", token);
+				resp.getWriter().println(newObj2.toString());
 				
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
@@ -89,19 +90,32 @@ public class WallServlet extends HttpServlet {
 	public void doDelete(HttpServletRequest req, HttpServletResponse resp)
 			throws IOException, ServletException {
 		String uri = req.getRequestURI();
+		String token = req.getQueryString();
+
+		token = token.substring(6, token.length());
+		
+		
 		int lastIndex = uri.lastIndexOf("/delete");
-		if (lastIndex > -1) {  // uri ends with "/likes"
-			// Implements POST http://localhost:8080/waslab03/tweets/:id/likes
-			long id = Long.valueOf(uri.substring(TWEETS_URI.length(),lastIndex));
+		if (lastIndex > -1) {  // uri ends with "/delete"
+			// Implements POST http://localhost:8080/waslab03/tweets/:id/delete
+			long id = Long.valueOf(uri.substring(uri.length(),lastIndex));
+			long id_test = 185;
+			String tokenID = StringtoHashMD5(Long.toString(id));
 			
-			if(!Database.deleteTweet(id)) {
+			Database.deleteTweet(id_test+4);
+			boolean borrat = false;
+			if(!token.isEmpty() && tokenID.equals(token)) borrat = Database.deleteTweet(id);
+			
+			//if(!Database.deleteTweet(id)) {
 				
-			}
+			
+			
+			if(!borrat)throw new ServletException("DELETE not yet implemented");
+			
 		}
 		
 		
-		throw new ServletException("DELETE not yet implemented");
-	}
+		}
 
 	
 	String StringtoHashMD5(String s) {
